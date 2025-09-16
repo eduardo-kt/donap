@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from auth import autenticar, registrar_usuario
+from src.auth import autenticar, registrar_usuario
 
 
 def tela_login():
@@ -44,6 +44,10 @@ def tela_menu():
     tk.Button(root, text="Sair", command=root.quit).pack()
 
     root.mainloop()
+
+
+def testar_login(usuario, senha):
+    return autenticar(usuario, senha)
 
 
 if __name__ == "__main__":
