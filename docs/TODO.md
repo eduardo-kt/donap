@@ -10,7 +10,7 @@
 - [ ] Adicionar persistência de dados
 
 ## 2. Interface / Frontend
-- [ ] Tela de login
+- [v] Tela de login
 - [ ] Menu principal com opções:
     - [ ] Cadastrar
     - [ ] Pesquisar
@@ -19,11 +19,13 @@
 
 
 ## 3. Banco de Dados / Persistência
-- [ ] Criar arquivo ou pasta para armazenamento
-- [ ] Implementar leitura e escrita
+- [v] Criar arquivo ou pasta para armazenamento
+- [v] Implementar leitura e escrita
 - [ ] Garantir persistência entre sessões
 
 ## 4. Testes
+- [v] teste unitário para leitura e escrita
+- [v] teste unitário para login usuário e senha
 - [ ] 
 
 ## 5. Extras / Futuro
