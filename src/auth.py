@@ -11,4 +11,6 @@ def registrar_usuario(username, senha):
 
 def autenticar(username, senha):
     usuarios = carregar_json("usuarios.json")
-    return any(u["username"] == username and u["senha"] == senha for u in usuarios)
+    return any(
+        u["username"] == username and u["senha"] == senha for u in usuarios
+    )  # noqa: E501
