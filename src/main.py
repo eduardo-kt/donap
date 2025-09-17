@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from src.auth import autenticar, registrar_usuario
+from src.persistencia import salvar_donatario
 
 
 def tela_login():
@@ -33,6 +34,47 @@ def tela_login():
     root.mainloop()
 
 
+def tela_cadastro_donatario():
+    cadastro_win = tk.Toplevel()
+    cadastro_win.title("Cadastro de Donatário")
+
+    tk.Label(cadastro_win, text="Nome:").pack()
+    entry_nome = tk.Entry(cadastro_win)
+    entry_nome.pack()
+
+    tk.Label(cadastro_win, text="Data de Nascimento:").pack()
+    entry_data = tk.Entry(cadastro_win)
+    entry_data.pack()
+
+    tk.Label(cadastro_win, text="CPF:").pack()
+    entry_cpf = tk.Entry(cadastro_win)
+    entry_cpf.pack()
+
+    def salvar():
+        nome = entry_nome.get()
+        data = entry_data.get()
+        cpf = entry_cpf.get()
+
+        if not all([nome, data, cpf]):
+            messagebox.showwarning("Aviso", "Preencha todos os campos!")
+
+        donatario = {"nome": nome, "data_nascimento": data, "cpf": cpf}
+        salvar_donatario(donatario)
+
+        messagebox.showinfo(
+            "Cadastro",
+            f"Donatário {nome} cadastrado com sucesso!",
+        )
+        cadastro_win.destroy()
+
+    tk.Button(cadastro_win, text="Salvar", command=salvar).pack()
+    tk.Button(
+        cadastro_win,
+        text="Cancelar",
+        command=cadastro_win.destroy,
+    ).pack()
+
+
 def tela_menu():
     root = tk.Tk()
     root.title("Menu Principal")
@@ -40,7 +82,9 @@ def tela_menu():
     tk.Label(root, text="Bem-vindo! Escolha uma opção:").pack()
 
     tk.Button(
-        root, text="Cadastrar Donatário", command=lambda: print("Cadastrar...")
+        root,
+        text="Cadastrar Donatário",
+        command=tela_cadastro_donatario,
     ).pack()
     tk.Button(
         root, text="Cadastrar Donativo", command=lambda: print("Cadastrar...")
