@@ -39,9 +39,16 @@ def tela_menu():
 
     tk.Label(root, text="Bem-vindo! Escolha uma opção:").pack()
 
-    tk.Button(root, text="Cadastrar", command=lambda: print("Cadastrar...")).pack()
-    tk.Button(root, text="Consultar", command=lambda: print("Consultar...")).pack()
-    tk.Button(root, text="Sair", command=root.quit).pack()
+    tk.Button(
+        root, text="Cadastrar Donatário", command=lambda: print("Cadastrar...")
+    ).pack()
+    tk.Button(
+        root, text="Cadastrar Donativo", command=lambda: print("Cadastrar...")
+    ).pack()
+    tk.Button(
+        root, text="Consultar Donatário", command=lambda: print("Consultar...")
+    ).pack()
+    tk.Button(root, text="Sair", command=root.destroy).pack()
 
     root.mainloop()
 
