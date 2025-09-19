@@ -4,6 +4,30 @@ from src.auth import autenticar, registrar_usuario
 from src.persistencia import salvar_donatario, carregar_donatarios
 
 
+# ==========================
+# Funções de Lógica
+# ==========================
+def buscar_donatarios(chave: str):
+    """
+    Busca donatários pelo nome ou CPF.
+    Retorna uma lista de dicionários com os donatários encontrados.
+    """
+    donatarios = carregar_donatarios()
+    encontrados = [
+        d
+        for d in donatarios
+        if (chave.lower() in d["nome"].lower() or chave == d["cpf"])
+    ]
+    return encontrados
+
+
+def testar_login(usuario, senha):
+    return autenticar(usuario, senha)
+
+
+# ==========================
+# Interface Gráfica
+# ==========================
 def tela_consulta_donatario():
     consulta_win = tk.Toplevel()
     consulta_win.title("Consulta Donatário")
@@ -26,20 +50,14 @@ def tela_consulta_donatario():
             )
             return
 
-        donatarios = carregar_donatarios()
-
-        encontrados = [
-            d
-            for d in donatarios
-            if chave.lower() in d["nome"].lower() or chave == d["cpf"]
-        ]
+        encontrados = buscar_donatarios(chave)
 
         if encontrados:
             for d in encontrados:
                 resultados_text.insert(
                     tk.END,
                     (
-                        f"Nome: {d['nome']},",
+                        f"Nome: {d['nome']}, ",
                         f"Data Nasc.: {d['data_nascimento']}, ",
                         f"CPF: {d['cpf']}\n",
                     ),
@@ -49,36 +67,6 @@ def tela_consulta_donatario():
 
     tk.Button(consulta_win, text="Consultar", command=consultar).pack()
     tk.Button(consulta_win, text="Fechar", command=consulta_win.destroy).pack()
-
-
-def tela_login():
-    def tentar_login():
-        if autenticar(entry_user.get(), entry_pass.get()):
-            messagebox.showinfo("Sucesso", "Login realizado!")
-            root.destroy()
-            tela_menu()
-        else:
-            messagebox.showerror("Erro", "Usuário ou senha inválidos")
-
-    root = tk.Tk()
-    root.title("Login")
-
-    tk.Label(root, text="Usuário").pack()
-    entry_user = tk.Entry(root)
-    entry_user.pack()
-
-    tk.Label(root, text="Senha").pack()
-    entry_pass = tk.Entry(root, show="*")
-    entry_pass.pack()
-
-    tk.Button(root, text="Entrar", command=tentar_login).pack()
-    tk.Button(
-        root,
-        text="Registrar",
-        command=lambda: registrar_usuario(entry_user.get(), entry_pass.get()),
-    ).pack()
-
-    root.mainloop()
 
 
 def tela_cadastro_donatario():
@@ -104,6 +92,7 @@ def tela_cadastro_donatario():
 
         if not all([nome, data, cpf]):
             messagebox.showwarning("Aviso", "Preencha todos os campos!")
+            return
 
         donatario = {"nome": nome, "data_nascimento": data, "cpf": cpf}
         salvar_donatario(donatario)
@@ -146,8 +135,34 @@ def tela_menu():
     root.mainloop()
 
 
-def testar_login(usuario, senha):
-    return autenticar(usuario, senha)
+def tela_login():
+    def tentar_login():
+        if autenticar(entry_user.get(), entry_pass.get()):
+            messagebox.showinfo("Sucesso", "Login realizado!")
+            root.destroy()
+            tela_menu()
+        else:
+            messagebox.showerror("Erro", "Usuário ou senha inválidos")
+
+    root = tk.Tk()
+    root.title("Login")
+
+    tk.Label(root, text="Usuário").pack()
+    entry_user = tk.Entry(root)
+    entry_user.pack()
+
+    tk.Label(root, text="Senha").pack()
+    entry_pass = tk.Entry(root, show="*")
+    entry_pass.pack()
+
+    tk.Button(root, text="Entrar", command=tentar_login).pack()
+    tk.Button(
+        root,
+        text="Registrar",
+        command=lambda: registrar_usuario(entry_user.get(), entry_pass.get()),
+    ).pack()
+
+    root.mainloop()
 
 
 if __name__ == "__main__":
