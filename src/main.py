@@ -1,7 +1,54 @@
 import tkinter as tk
 from tkinter import messagebox
 from src.auth import autenticar, registrar_usuario
-from src.persistencia import salvar_donatario
+from src.persistencia import salvar_donatario, carregar_donatarios
+
+
+def tela_consulta_donatario():
+    consulta_win = tk.Toplevel()
+    consulta_win.title("Consulta Donatário")
+
+    tk.Label(consulta_win, text="Nome ou CPF:").pack()
+    entry_chave = tk.Entry(consulta_win)
+    entry_chave.pack()
+
+    resultados_text = tk.Text(consulta_win, width=50, height=10)
+    resultados_text.pack()
+
+    def consultar():
+        chave = entry_chave.get().strip()
+        resultados_text.delete("1.0", tk.END)
+
+        if not chave:
+            resultados_text.insert(
+                tk.END,
+                "Digite um nome ou CPF para consultar!\n",
+            )
+            return
+
+        donatarios = carregar_donatarios()
+
+        encontrados = [
+            d
+            for d in donatarios
+            if chave.lower() in d["nome"].lower() or chave == d["cpf"]
+        ]
+
+        if encontrados:
+            for d in encontrados:
+                resultados_text.insert(
+                    tk.END,
+                    (
+                        f"Nome: {d['nome']},",
+                        f"Data Nasc.: {d['data_nascimento']}, ",
+                        f"CPF: {d['cpf']}\n",
+                    ),
+                )
+        else:
+            resultados_text.insert(tk.END, "Nenhum donatário encontrado.\n")
+
+    tk.Button(consulta_win, text="Consultar", command=consultar).pack()
+    tk.Button(consulta_win, text="Fechar", command=consulta_win.destroy).pack()
 
 
 def tela_login():
@@ -90,7 +137,9 @@ def tela_menu():
         root, text="Cadastrar Donativo", command=lambda: print("Cadastrar...")
     ).pack()
     tk.Button(
-        root, text="Consultar Donatário", command=lambda: print("Consultar...")
+        root,
+        text="Consultar Donatário",
+        command=tela_consulta_donatario,
     ).pack()
     tk.Button(root, text="Sair", command=root.destroy).pack()
 
