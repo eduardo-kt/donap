@@ -9,10 +9,12 @@ from src.main import buscar_donatarios
 class TestPersistencia(unittest.TestCase):
     def test_salvar_e_carregar_generico(self):
         """Testa salvar e carregar JSON genérico."""
-        dados = [{"x": 1}]
-        persistencia.salvar_json("teste.json", dados)
-        resultado = persistencia.carregar_json("teste.json")
-        self.assertEqual(dados, resultado)
+        with TemporaryDirectory() as tmpdir:
+            arquivo = Path(tmpdir) / "teste.json"
+            dados = [{"x": 1}]
+            persistencia.salvar_json(arquivo, dados)
+            resultado = persistencia.carregar_json(arquivo)
+            self.assertEqual(dados, resultado)
 
     def test_salvar_e_carregar_donatario(self):
         """Testa salvar e carregar um donatário usando arquivo temporário."""
@@ -20,11 +22,11 @@ class TestPersistencia(unittest.TestCase):
             arquivo = Path(tmpdir) / "donatarios.json"
 
             # inicializa arquivo vazio
-            persistencia.salvar_json(arquivo.name, [])
-            self.assertEqual(persistencia.carregar_json(arquivo.name), [])
+            persistencia.salvar_json(arquivo, [])
+            self.assertEqual(persistencia.carregar_json(arquivo), [])
 
             # redefine ARQ_DONATARIOS para usar o arquivo temporário
-            persistencia.ARQ_DONATARIOS = arquivo.name
+            persistencia.ARQ_DONATARIOS = arquivo
 
             donatario = {
                 "nome": "Teste",
@@ -43,39 +45,47 @@ class TestPersistencia(unittest.TestCase):
             arquivo = Path(tmpdir) / "donatarios.json"
             arquivo.touch()  # cria arquivo vazio
 
-            persistencia.ARQ_DONATARIOS = arquivo.name
+            persistencia.ARQ_DONATARIOS = arquivo
 
             donatarios = persistencia.carregar_donatarios()
             self.assertEqual(donatarios, [])
 
     def test_buscar_donatarios(self):
-        """Testa a função de busca de donatários separada da GUI."""
-        donatarios = [
-            {
-                "nome": "João Silva",
-                "data_nascimento": "1990-01-01",
-                "cpf": "123",
-            },
-            {
-                "nome": "Maria Souza",
-                "data_nascimento": "1995-05-05",
-                "cpf": "456",
-            },
-        ]
 
-        # busca por nome parcial
-        resultados = buscar_donatarios(donatarios, "joão")
-        self.assertEqual(len(resultados), 1)
-        self.assertEqual(resultados[0]["cpf"], "123")
+        with TemporaryDirectory() as tmpdir:
+            arquivo = Path(tmpdir) / "donatarios.json"
 
-        # busca por CPF
-        resultados = buscar_donatarios(donatarios, "456")
-        self.assertEqual(len(resultados), 1)
-        self.assertEqual(resultados[0]["nome"], "Maria Souza")
+            # dados de teste
+            donatarios = [
+                {
+                    "nome": "João Silva",
+                    "data_nascimento": "1990-01-01",
+                    "cpf": "123",
+                },
+                {
+                    "nome": "Maria Souza",
+                    "data_nascimento": "1995-05-05",
+                    "cpf": "456",
+                },
+            ]
 
-        # busca sem resultados
-        resultados = buscar_donatarios(donatarios, "Pedro")
-        self.assertEqual(len(resultados), 0)
+            # salva no arquivo temporário
+            persistencia.salvar_json(arquivo, donatarios)
+            persistencia.ARQ_DONATARIOS = arquivo
+
+            # busca por nome parcial
+            resultados = buscar_donatarios("joão")
+            self.assertEqual(len(resultados), 1)
+            self.assertEqual(resultados[0]["cpf"], "123")
+
+            # busca por CPF
+            resultados = buscar_donatarios("456")
+            self.assertEqual(len(resultados), 1)
+            self.assertEqual(resultados[0]["nome"], "Maria Souza")
+
+            # busca sem resultados
+            resultados = buscar_donatarios("Pedro")
+            self.assertEqual(len(resultados), 0)
 
 
 if __name__ == "__main__":
