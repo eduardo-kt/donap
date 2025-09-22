@@ -3,5 +3,15 @@
         "tipo": "Camiseta",
         "cor": "Outro",
         "tamanho": "M"
+    },
+    {
+        "tipo": "Calça",
+        "cor": "Vermelho",
+        "tamanho": "G"
+    },
+    {
+        "tipo": "Saia",
+        "cor": "Verde",
+        "tamanho": "GG"
     }
 ]
