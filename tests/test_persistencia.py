@@ -87,6 +87,36 @@ class TestPersistencia(unittest.TestCase):
             resultados = buscar_donatarios("Pedro")
             self.assertEqual(len(resultados), 0)
 
+    def test_salvar_e_carregar_doacao(self):
+        """Testa salvar e carregar uma doação usando arquivo temporário."""
+        with TemporaryDirectory() as tmpdir:
+            arquivo = Path(tmpdir) / "doacoes.json"
+
+            # inicializa arquivo vazio
+            persistencia.salvar_json(arquivo, [])
+            self.assertEqual(persistencia.carregar_json(arquivo), [])
+
+            # redefine ARQ_DOACOES para usar o arquivo temporário
+            persistencia.ARQ_DOACOES = arquivo
+
+            doacao = {"tipo": "Camiseta", "cor": "Azul", "tamanho": "M"}
+            persistencia.salvar_doacao(doacao)
+
+            # verifica se foi salvo corretamente
+            doacoes = persistencia.carregar_doacoes()
+            self.assertIn(doacao, doacoes)
+
+    def test_carregar_doacoes_arquivo_vazio(self):
+        """Testa comportamento com arquivo JSON vazio para doações."""
+        with TemporaryDirectory() as tmpdir:
+            arquivo = Path(tmpdir) / "doacoes.json"
+            arquivo.touch()  # cria arquivo vazio
+
+            persistencia.ARQ_DOACOES = arquivo
+
+            doacoes = persistencia.carregar_doacoes()
+            self.assertEqual(doacoes, [])
+
 
 if __name__ == "__main__":
     unittest.main()
