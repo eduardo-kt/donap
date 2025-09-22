@@ -1,7 +1,12 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
 from src.auth import autenticar, registrar_usuario
-from src.persistencia import salvar_donatario, carregar_donatarios
+from src.persistencia import (
+    salvar_donatario,
+    carregar_donatarios,
+    salvar_doacao,
+)
 
 
 # ==========================
@@ -111,6 +116,62 @@ def tela_cadastro_donatario():
     ).pack()
 
 
+def tela_cadastro_doacao():
+    doacao_win = tk.Toplevel()
+    doacao_win.title("Cadastro de Doação")
+
+    # Tipo de item
+    tk.Label(doacao_win, text="Tipo de item:").pack()
+    tipos = ["Camiseta", "Calça", "Casaco", "Saia", "Vestido", "Outro"]
+    cb_tipo = ttk.Combobox(doacao_win, values=tipos, state="readonly")
+    cb_tipo.pack()
+
+    # Cor
+    tk.Label(doacao_win, text="Cor do item:").pack()
+    cores = [
+        "Branco",
+        "Preto",
+        "Azul",
+        "Vermelho",
+        "Verde",
+        "Amarelo",
+        "Outro",
+    ]
+    cb_cor = ttk.Combobox(doacao_win, values=cores, state="readonly")
+    cb_cor.pack()
+
+    # Tamanho
+    tk.Label(doacao_win, text="Tamanho:").pack()
+    tamanhos = ["PP", "P", "M", "G", "GG", "Outro"]
+    cb_tamanho = ttk.Combobox(doacao_win, values=tamanhos, state="readonly")
+    cb_tamanho.pack()
+
+    def salvar():
+        tipo = cb_tipo.get()
+        cor = cb_cor.get()
+        tamanho = cb_tamanho.get()
+
+        if not all([tipo, cor, tamanho]):
+            messagebox.showwarning("Aviso", "Preencha todos os campos!")
+            return
+
+        doacao = {"tipo": tipo, "cor": cor, "tamanho": tamanho}
+        salvar_doacao(doacao)
+
+        messagebox.showinfo(
+            "Cadastro",
+            "Doação cadastrada com sucesso!",
+        )
+        doacao_win.destroy()
+
+    tk.Button(doacao_win, text="Salvar", command=salvar).pack()
+    tk.Button(
+        doacao_win,
+        text="Cancelar",
+        command=doacao_win.destroy,
+    ).pack()
+
+
 def tela_menu():
     root = tk.Tk()
     root.title("Menu Principal")
@@ -123,7 +184,9 @@ def tela_menu():
         command=tela_cadastro_donatario,
     ).pack()
     tk.Button(
-        root, text="Cadastrar Donativo", command=lambda: print("Cadastrar...")
+        root,
+        text="Cadastrar Doação",
+        command=tela_cadastro_doacao,
     ).pack()
     tk.Button(
         root,
