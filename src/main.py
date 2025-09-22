@@ -6,6 +6,7 @@ from src.persistencia import (
     salvar_donatario,
     carregar_donatarios,
     salvar_doacao,
+    carregar_doacoes,
 )
 
 
@@ -172,6 +173,74 @@ def tela_cadastro_doacao():
     ).pack()
 
 
+def tela_consulta_doacao():
+    consulta_win = tk.Toplevel()
+    consulta_win.title("Consulta de Doações")
+
+    # Campos de filtro
+    tk.Label(consulta_win, text="Tipo de item:").pack()
+    tipos = ["", "Camiseta", "Calça", "Casaco", "Saia", "Vestido", "Outro"]
+    cb_tipo = ttk.Combobox(consulta_win, values=tipos, state="readonly")
+    cb_tipo.current(0)
+    cb_tipo.pack()
+
+    tk.Label(consulta_win, text="Cor do item:").pack()
+    cores = [
+        "",
+        "Branco",
+        "Preto",
+        "Azul",
+        "Vermelho",
+        "Verde",
+        "Amarelo",
+        "Outro",
+    ]
+    cb_cor = ttk.Combobox(consulta_win, values=cores, state="readonly")
+    cb_cor.current(0)
+    cb_cor.pack()
+
+    tk.Label(consulta_win, text="Tamanho:").pack()
+    tamanhos = ["", "PP", "P", "M", "G", "GG", "Outro"]
+    cb_tamanho = ttk.Combobox(consulta_win, values=tamanhos, state="readonly")
+    cb_tamanho.current(0)
+    cb_tamanho.pack()
+
+    resultados_text = tk.Text(consulta_win, width=60, height=15)
+    resultados_text.pack()
+
+    def consultar():
+        tipo = cb_tipo.get()
+        cor = cb_cor.get()
+        tamanho = cb_tamanho.get()
+
+        resultados_text.delete("1.0", tk.END)
+        doacoes = carregar_doacoes()
+
+        # Filtragem flexível
+        encontrados = [
+            d
+            for d in doacoes
+            if (not tipo or d["tipo"] == tipo)
+            and (not cor or d["cor"] == cor)
+            and (not tamanho or d["tamanho"] == tamanho)
+        ]
+
+        if encontrados:
+            for i, d in enumerate(encontrados, start=1):
+                resultados_text.insert(
+                    tk.END,
+                    (
+                        f"{i}. Tipo: {d['tipo']}, ",
+                        f"Cor: {d['cor']}, Tamanho: {d['tamanho']}\n",
+                    ),
+                )
+        else:
+            resultados_text.insert(tk.END, "Nenhuma doação encontrada.\n")
+
+    tk.Button(consulta_win, text="Consultar", command=consultar).pack()
+    tk.Button(consulta_win, text="Fechar", command=consulta_win.destroy).pack()
+
+
 def tela_menu():
     root = tk.Tk()
     root.title("Menu Principal")
@@ -192,6 +261,11 @@ def tela_menu():
         root,
         text="Consultar Donatário",
         command=tela_consulta_donatario,
+    ).pack()
+    tk.Button(
+        root,
+        text="Consultar Doações",
+        command=tela_consulta_doacao,
     ).pack()
     tk.Button(root, text="Sair", command=root.destroy).pack()
 
