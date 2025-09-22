@@ -8,5 +8,10 @@
         "nome": "joao",
         "data_nascimento": "01/02/2002",
         "cpf": "98765432100"
+    },
+    {
+        "nome": "teste2",
+        "data_nascimento": "01/03/2000",
+        "cpf": "74125896300"
     }
 ]
