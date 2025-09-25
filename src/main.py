@@ -182,32 +182,34 @@ def tela_consulta_doacao():
     consulta_win = tk.Toplevel()
     consulta_win.title("Consulta de Doações")
 
-    # Campos de filtro
+    # Carrega todas as doações
+    doacoes = carregar_doacoes()
+
+    # Função para extrair valores únicos de um campo
+    def valores_unicos(campo):
+        return sorted({d[campo] for d in doacoes}) + ["Outro"]
+
+    # Combobox Tipo
     tk.Label(consulta_win, text="Tipo de item:").pack()
-    tipos = ["", "Camiseta", "Calça", "Casaco", "Saia", "Vestido", "Outro"]
-    cb_tipo = ttk.Combobox(consulta_win, values=tipos, state="readonly")
-    cb_tipo.current(0)
+    cb_tipo = ttk.Combobox(
+        consulta_win, values=valores_unicos("tipo"), state="readonly"
+    )
     cb_tipo.pack()
 
+    # Combobox Cor
     tk.Label(consulta_win, text="Cor do item:").pack()
-    cores = [
-        "",
-        "Branco",
-        "Preto",
-        "Azul",
-        "Vermelho",
-        "Verde",
-        "Amarelo",
-        "Outro",
-    ]
-    cb_cor = ttk.Combobox(consulta_win, values=cores, state="readonly")
-    cb_cor.current(0)
+    cb_cor = ttk.Combobox(
+        consulta_win,
+        values=valores_unicos("cor"),
+        state="readonly",
+    )
     cb_cor.pack()
 
+    # Combobox Tamanho
     tk.Label(consulta_win, text="Tamanho:").pack()
-    tamanhos = ["", "PP", "P", "M", "G", "GG", "Outro"]
-    cb_tamanho = ttk.Combobox(consulta_win, values=tamanhos, state="readonly")
-    cb_tamanho.current(0)
+    cb_tamanho = ttk.Combobox(
+        consulta_win, values=valores_unicos("tamanho"), state="readonly"
+    )
     cb_tamanho.pack()
 
     resultados_text = tk.Text(consulta_win, width=60, height=15)
@@ -219,9 +221,7 @@ def tela_consulta_doacao():
         tamanho = cb_tamanho.get()
 
         resultados_text.delete("1.0", tk.END)
-        doacoes = carregar_doacoes()
 
-        # Filtragem flexível
         encontrados = [
             d
             for d in doacoes
