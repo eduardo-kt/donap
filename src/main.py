@@ -88,45 +88,100 @@ def tela_detalhes_donatario(cpf, nome):
     detalhes_win = tk.Toplevel()
     detalhes_win.title(f"Detalhes de {nome}")
 
-    # Carregar doações
     doacoes = carregar_doacoes()
-    doacoes_por_donatario = carregar_donatario_doacoes()  # {"cpf": [doacoes]}
+    doacoes_por_donatario = carregar_donatario_doacoes()
     recebidas = doacoes_por_donatario.get(cpf, [])
-    disponiveis = [d for d in doacoes if d not in recebidas]
 
-    # Treeviews lado a lado
-    tk.Label(detalhes_win, text="Doações Recebidas").grid(row=0, column=0)
-    tk.Label(detalhes_win, text="Doações Disponíveis").grid(row=0, column=1)
+    # Função para obter doações disponíveis
+    def atualizar_disponiveis():
+        todas_recebidas = [
+            d for doacoes in doacoes_por_donatario.values() for d in doacoes
+        ]
+        return [d for d in doacoes if d not in todas_recebidas]
+
+    disponiveis = atualizar_disponiveis()
+
+    # ----------------- Filtros -----------------
+    filtro_frame = tk.Frame(detalhes_win)
+    filtro_frame.grid(row=0, column=0, columnspan=2, pady=5)
+
+    tk.Label(filtro_frame, text="Tipo:").grid(row=0, column=0)
+    tipos = sorted({d["tipo"] for d in doacoes}) + [""]
+    cb_tipo = ttk.Combobox(filtro_frame, values=tipos, state="readonly")
+    cb_tipo.set("")
+    cb_tipo.grid(row=0, column=1)
+
+    tk.Label(filtro_frame, text="Cor:").grid(row=0, column=2)
+    cores = sorted({d["cor"] for d in doacoes}) + [""]
+    cb_cor = ttk.Combobox(filtro_frame, values=cores, state="readonly")
+    cb_cor.set("")
+    cb_cor.grid(row=0, column=3)
+
+    tk.Label(filtro_frame, text="Tamanho:").grid(row=0, column=4)
+    tamanhos = sorted({d["tamanho"] for d in doacoes}) + [""]
+    cb_tamanho = ttk.Combobox(filtro_frame, values=tamanhos, state="readonly")
+    cb_tamanho.set("")
+    cb_tamanho.grid(row=0, column=5)
+
+    # ----------------- Treeviews -----------------
+    tk.Label(detalhes_win, text="Doações Recebidas").grid(row=1, column=0)
+    tk.Label(detalhes_win, text="Doações Disponíveis").grid(row=1, column=1)
 
     tree_recebidas = ttk.Treeview(
-        detalhes_win, columns=("Tipo", "Cor", "Tamanho"), show="headings"
+        detalhes_win,
+        columns=("Tipo", "Cor", "Tamanho"),
+        show="headings",
+        height=10,
     )
     for c in ("Tipo", "Cor", "Tamanho"):
         tree_recebidas.heading(c, text=c)
-    tree_recebidas.grid(row=1, column=0)
+    tree_recebidas.grid(row=2, column=0, padx=5)
 
     tree_disponiveis = ttk.Treeview(
-        detalhes_win, columns=("Tipo", "Cor", "Tamanho"), show="headings"
+        detalhes_win,
+        columns=("Tipo", "Cor", "Tamanho"),
+        show="headings",
+        height=10,
     )
     for c in ("Tipo", "Cor", "Tamanho"):
         tree_disponiveis.heading(c, text=c)
-    tree_disponiveis.grid(row=1, column=1)
+    tree_disponiveis.grid(row=2, column=1, padx=5)
 
-    # Preencher Treeviews
-    for d in recebidas:
-        tree_recebidas.insert(
-            "",
-            tk.END,
-            values=(d["tipo"], d["cor"], d["tamanho"]),
-        )
-    for d in disponiveis:
-        tree_disponiveis.insert(
-            "",
-            tk.END,
-            values=(d["tipo"], d["cor"], d["tamanho"]),
-        )
+    # ----------------- Atualização das listas -----------------
+    def atualizar_listas():
+        # Aplica filtros
+        tipo_f = cb_tipo.get()
+        cor_f = cb_cor.get()
+        tam_f = cb_tamanho.get()
 
-    # Função para associar doação ao donatário
+        tree_recebidas.delete(*tree_recebidas.get_children())
+        for d in recebidas:
+            if (
+                (not tipo_f or d["tipo"] == tipo_f)
+                and (not cor_f or d["cor"] == cor_f)
+                and (not tam_f or d["tamanho"] == tam_f)
+            ):
+                tree_recebidas.insert(
+                    "", tk.END, values=(d["tipo"], d["cor"], d["tamanho"])
+                )
+
+        tree_disponiveis.delete(*tree_disponiveis.get_children())
+        for d in disponiveis:
+            if (
+                (not tipo_f or d["tipo"] == tipo_f)
+                and (not cor_f or d["cor"] == cor_f)
+                and (not tam_f or d["tamanho"] == tam_f)
+            ):
+                tree_disponiveis.insert(
+                    "", tk.END, values=(d["tipo"], d["cor"], d["tamanho"])
+                )
+
+    # Bind para atualizar ao mudar filtro
+    cb_tipo.bind("<<ComboboxSelected>>", lambda e: atualizar_listas())
+    cb_cor.bind("<<ComboboxSelected>>", lambda e: atualizar_listas())
+    cb_tamanho.bind("<<ComboboxSelected>>", lambda e: atualizar_listas())
+
+    # ----------------- Função adicionar doação -----------------
     def adicionar_doacao():
         sel = tree_disponiveis.selection()
         if not sel:
@@ -140,14 +195,15 @@ def tela_detalhes_donatario(cpf, nome):
         recebidas.append(d)
         disponiveis.remove(d)
         salvar_donatario_doacoes(cpf, recebidas)
-        tree_recebidas.insert("", tk.END, values=item["values"])
-        tree_disponiveis.delete(sel[0])
+        atualizar_listas()
 
     tk.Button(
         detalhes_win,
         text="Adicionar Doação",
         command=adicionar_doacao,
-    ).grid(row=2, column=1)
+    ).grid(row=3, column=1, pady=5)
+
+    atualizar_listas()  # inicializa
 
 
 def tela_cadastro_donatario():
