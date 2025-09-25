@@ -3,9 +3,11 @@ from tkinter import messagebox, ttk, simpledialog
 from src.auth import autenticar, registrar_usuario
 from src.persistencia import (
     salvar_donatario,
-    carregar_donatarios,
     salvar_doacao,
+    salvar_donatario_doacoes,
+    carregar_donatarios,
     carregar_doacoes,
+    carregar_donatario_doacoes,
 )
 
 
@@ -41,37 +43,111 @@ def tela_consulta_donatario():
     entry_chave = tk.Entry(consulta_win)
     entry_chave.pack()
 
-    resultados_text = tk.Text(consulta_win, width=50, height=10)
-    resultados_text.pack()
+    # Listbox ou Treeview para exibir resultados
+    tree = ttk.Treeview(
+        consulta_win, columns=("Nome", "CPF"), show="headings", height=10
+    )
+    tree.heading("Nome", text="Nome")
+    tree.heading("CPF", text="CPF")
+    tree.pack()
 
     def consultar():
         chave = entry_chave.get().strip()
-        resultados_text.delete("1.0", tk.END)
+        for i in tree.get_children():
+            tree.delete(i)
 
         if not chave:
-            resultados_text.insert(
-                tk.END,
-                "Digite um nome ou CPF para consultar!\n",
+            messagebox.showwarning(
+                "Aviso",
+                "Digite um nome ou CPF para consultar!",
             )
             return
 
         encontrados = buscar_donatarios(chave)
-
         if encontrados:
             for d in encontrados:
-                resultados_text.insert(
-                    tk.END,
-                    (
-                        f"Nome: {d['nome']}, ",
-                        f"Data Nasc.: {d['data_nascimento']}, ",
-                        f"CPF: {d['cpf']}\n",
-                    ),
-                )
+                tree.insert("", tk.END, values=(d["nome"], d["cpf"]))
         else:
-            resultados_text.insert(tk.END, "Nenhum donatário encontrado.\n")
+            messagebox.showinfo("Resultado", "Nenhum donatário encontrado.")
+
+    def abrir_detalhes(event):
+        selecionado = tree.selection()
+        if not selecionado:
+            return
+        item = tree.item(selecionado[0])
+        nome, cpf = item["values"]
+        tela_detalhes_donatario(cpf, nome)
+
+    tree.bind("<Double-1>", abrir_detalhes)
 
     tk.Button(consulta_win, text="Consultar", command=consultar).pack()
     tk.Button(consulta_win, text="Fechar", command=consulta_win.destroy).pack()
+
+
+def tela_detalhes_donatario(cpf, nome):
+    detalhes_win = tk.Toplevel()
+    detalhes_win.title(f"Detalhes de {nome}")
+
+    # Carregar doações
+    doacoes = carregar_doacoes()
+    doacoes_por_donatario = carregar_donatario_doacoes()  # {"cpf": [doacoes]}
+    recebidas = doacoes_por_donatario.get(cpf, [])
+    disponiveis = [d for d in doacoes if d not in recebidas]
+
+    # Treeviews lado a lado
+    tk.Label(detalhes_win, text="Doações Recebidas").grid(row=0, column=0)
+    tk.Label(detalhes_win, text="Doações Disponíveis").grid(row=0, column=1)
+
+    tree_recebidas = ttk.Treeview(
+        detalhes_win, columns=("Tipo", "Cor", "Tamanho"), show="headings"
+    )
+    for c in ("Tipo", "Cor", "Tamanho"):
+        tree_recebidas.heading(c, text=c)
+    tree_recebidas.grid(row=1, column=0)
+
+    tree_disponiveis = ttk.Treeview(
+        detalhes_win, columns=("Tipo", "Cor", "Tamanho"), show="headings"
+    )
+    for c in ("Tipo", "Cor", "Tamanho"):
+        tree_disponiveis.heading(c, text=c)
+    tree_disponiveis.grid(row=1, column=1)
+
+    # Preencher Treeviews
+    for d in recebidas:
+        tree_recebidas.insert(
+            "",
+            tk.END,
+            values=(d["tipo"], d["cor"], d["tamanho"]),
+        )
+    for d in disponiveis:
+        tree_disponiveis.insert(
+            "",
+            tk.END,
+            values=(d["tipo"], d["cor"], d["tamanho"]),
+        )
+
+    # Função para associar doação ao donatário
+    def adicionar_doacao():
+        sel = tree_disponiveis.selection()
+        if not sel:
+            return
+        item = tree_disponiveis.item(sel[0])
+        d = {
+            "tipo": item["values"][0],
+            "cor": item["values"][1],
+            "tamanho": item["values"][2],
+        }
+        recebidas.append(d)
+        disponiveis.remove(d)
+        salvar_donatario_doacoes(cpf, recebidas)
+        tree_recebidas.insert("", tk.END, values=item["values"])
+        tree_disponiveis.delete(sel[0])
+
+    tk.Button(
+        detalhes_win,
+        text="Adicionar Doação",
+        command=adicionar_doacao,
+    ).grid(row=2, column=1)
 
 
 def tela_cadastro_donatario():
