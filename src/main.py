@@ -314,34 +314,31 @@ def tela_consulta_doacao():
     consulta_win = tk.Toplevel()
     consulta_win.title("Consulta de Doações")
 
-    # Carrega todas as doações
-    doacoes = carregar_doacoes()
-
-    # Função para extrair valores únicos de um campo
-    def valores_unicos(campo):
-        return sorted({d[campo] for d in doacoes}) + ["Outro"]
-
-    # Combobox Tipo
-    tk.Label(consulta_win, text="Tipo de item:").pack()
-    cb_tipo = ttk.Combobox(
-        consulta_win, values=valores_unicos("tipo"), state="readonly"
+    # Filtro de status
+    tk.Label(consulta_win, text="Status:").pack()
+    status_cb = ttk.Combobox(
+        consulta_win, values=["Disponíveis", "Realizadas"], state="readonly"
     )
+    status_cb.set("Disponíveis")
+    status_cb.pack()
+
+    # Campos de filtro
+    tk.Label(consulta_win, text="Tipo de item:").pack()
+    tipos = [""] + sorted({d["tipo"] for d in carregar_doacoes()})
+    cb_tipo = ttk.Combobox(consulta_win, values=tipos, state="readonly")
+    cb_tipo.current(0)
     cb_tipo.pack()
 
-    # Combobox Cor
     tk.Label(consulta_win, text="Cor do item:").pack()
-    cb_cor = ttk.Combobox(
-        consulta_win,
-        values=valores_unicos("cor"),
-        state="readonly",
-    )
+    cores = [""] + sorted({d["cor"] for d in carregar_doacoes()})
+    cb_cor = ttk.Combobox(consulta_win, values=cores, state="readonly")
+    cb_cor.current(0)
     cb_cor.pack()
 
-    # Combobox Tamanho
     tk.Label(consulta_win, text="Tamanho:").pack()
-    cb_tamanho = ttk.Combobox(
-        consulta_win, values=valores_unicos("tamanho"), state="readonly"
-    )
+    tamanhos = [""] + sorted({d["tamanho"] for d in carregar_doacoes()})
+    cb_tamanho = ttk.Combobox(consulta_win, values=tamanhos, state="readonly")
+    cb_tamanho.current(0)
     cb_tamanho.pack()
 
     resultados_text = tk.Text(consulta_win, width=60, height=15)
@@ -351,9 +348,24 @@ def tela_consulta_doacao():
         tipo = cb_tipo.get()
         cor = cb_cor.get()
         tamanho = cb_tamanho.get()
+        status = status_cb.get()
 
         resultados_text.delete("1.0", tk.END)
 
+        doacoes = carregar_doacoes()
+        doacoes_por_donatario = carregar_donatario_doacoes()
+        todas_recebidas = [
+            d
+            for doacoes_list in doacoes_por_donatario.values()
+            for d in doacoes_list  # noqa
+        ]
+
+        if status == "Disponíveis":
+            doacoes = [d for d in doacoes if d not in todas_recebidas]
+        elif status == "Realizadas":
+            doacoes = [d for d in todas_recebidas]
+
+        # Aplicar filtros adicionais
         encontrados = [
             d
             for d in doacoes
