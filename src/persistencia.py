@@ -21,9 +21,31 @@ def salvar_json(arquivo, dados):
         json.dump(dados, f, indent=4, ensure_ascii=False)
 
 
+# --- Donatário ↔ Doações ---
+def carregar_donatario_doacoes():
+    """
+    Retorna um dicionário: cpf -> lista de doações
+    """
+    dados = carregar_json(ARQ_DONATARIO_DOACOES)
+    # Garantir que seja dict mesmo se arquivo vazio
+    if isinstance(dados, list):
+        return {}
+    return dados
+
+
+def salvar_donatario_doacoes(cpf, doacoes):
+    """
+    Atualiza as doações associadas a um donatário.
+    """
+    dados = carregar_donatario_doacoes()
+    dados[cpf] = doacoes
+    salvar_json(ARQ_DONATARIO_DOACOES, dados)
+
+
 # -------- Funções específicas --------
 ARQ_DONATARIOS = "donatarios.json"
 ARQ_DOACOES = "doacoes.json"
+ARQ_DONATARIO_DOACOES = "donatario_doacoes.json"
 
 
 # --- Donatários ---
