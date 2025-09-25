@@ -1,0 +1,23 @@
+{
+    "12345678900": [ 
+        {
+            "tipo": "Calça",
+            "cor": "Vermelho",
+            "tamanho": "G"
+        }
+    ],
+    "95184376200": [
+        {
+            "tipo": "Camisa",
+            "cor": "Xadrez",
+            "tamanho": "GG"
+        }
+    ],
+    "12345678900": [
+        {
+            "tipo": "Boné",
+            "cor": "Verde",
+            "tamanho": "GG"
+        }
+    ]
+}

@@ -13,5 +13,20 @@
         "tipo": "Saia",
         "cor": "Verde",
         "tamanho": "GG"
+    },
+    {
+        "tipo": "Camisa",
+        "cor": "Xadrez",
+        "tamanho": "GG"
+    },
+    {
+        "tipo": "Meia",
+        "cor": "Preto",
+        "tamanho": "G"
+    },
+    {
+        "tipo": "Boné",
+        "cor": "Verde",
+        "tamanho": "GG"
     }
 ]
