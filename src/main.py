@@ -1,6 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
-from tkinter import ttk
+from tkinter import messagebox, ttk, simpledialog
 from src.auth import autenticar, registrar_usuario
 from src.persistencia import (
     salvar_donatario,
@@ -121,14 +120,31 @@ def tela_cadastro_doacao():
     doacao_win = tk.Toplevel()
     doacao_win.title("Cadastro de Doação")
 
+    def criar_combobox(titulo, opcoes):
+        tk.Label(doacao_win, text=titulo).pack()
+        cb = ttk.Combobox(doacao_win, values=opcoes, state="readonly")
+        cb.pack()
+
+        def checar_outro(event):
+            if cb.get() == "Outro":
+                novo_valor = simpledialog.askstring(
+                    "Outro", f"Digite o valor para {titulo.lower()}:"
+                )
+                if novo_valor:
+                    if novo_valor not in cb["values"]:
+                        cb["values"] = list(cb["values"]) + [novo_valor]
+                    cb.set(novo_valor)
+                else:
+                    cb.set("")  # limpa se nada for digitado
+
+        cb.bind("<<ComboboxSelected>>", checar_outro)
+        return cb
+
     # Tipo de item
-    tk.Label(doacao_win, text="Tipo de item:").pack()
     tipos = ["Camiseta", "Calça", "Casaco", "Saia", "Vestido", "Outro"]
-    cb_tipo = ttk.Combobox(doacao_win, values=tipos, state="readonly")
-    cb_tipo.pack()
+    cb_tipo = criar_combobox("Tipo de item", tipos)
 
     # Cor
-    tk.Label(doacao_win, text="Cor do item:").pack()
     cores = [
         "Branco",
         "Preto",
@@ -138,14 +154,11 @@ def tela_cadastro_doacao():
         "Amarelo",
         "Outro",
     ]
-    cb_cor = ttk.Combobox(doacao_win, values=cores, state="readonly")
-    cb_cor.pack()
+    cb_cor = criar_combobox("Cor do item", cores)
 
     # Tamanho
-    tk.Label(doacao_win, text="Tamanho:").pack()
     tamanhos = ["PP", "P", "M", "G", "GG", "Outro"]
-    cb_tamanho = ttk.Combobox(doacao_win, values=tamanhos, state="readonly")
-    cb_tamanho.pack()
+    cb_tamanho = criar_combobox("Tamanho", tamanhos)
 
     def salvar():
         tipo = cb_tipo.get()
@@ -158,19 +171,11 @@ def tela_cadastro_doacao():
 
         doacao = {"tipo": tipo, "cor": cor, "tamanho": tamanho}
         salvar_doacao(doacao)
-
-        messagebox.showinfo(
-            "Cadastro",
-            "Doação cadastrada com sucesso!",
-        )
+        messagebox.showinfo("Cadastro", "Doação cadastrada com sucesso!")
         doacao_win.destroy()
 
     tk.Button(doacao_win, text="Salvar", command=salvar).pack()
-    tk.Button(
-        doacao_win,
-        text="Cancelar",
-        command=doacao_win.destroy,
-    ).pack()
+    tk.Button(doacao_win, text="Cancelar", command=doacao_win.destroy).pack()
 
 
 def tela_consulta_doacao():
